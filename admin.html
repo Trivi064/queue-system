@@ -49,8 +49,7 @@
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 // 🔥 Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyBtIiNdx5cZwurBNZPrkaIe_pQaI92Qpzc",
@@ -76,23 +75,32 @@ window.checkAdmin = function () {
 window.nextPerson = async function () {
   const ref = doc(db, "queue", "main");
 
-  const snap = await getDoc(ref);
+  try {
+    const snap = await getDoc(ref);
 
-  let currentServing = snap.data().currentServing || 0;
-  let lastNumber = snap.data().lastNumber || 0;
+    if (!snap.exists()) {
+      alert("Queue not initialized!");
+      return;
+    }
 
-  if (currentServing >= lastNumber) {
-    alert("No more people in queue!");
-    return;
+    let currentServing = snap.data().currentServing || 0;
+    let lastNumber = snap.data().lastNumber || 0;
+
+    if (currentServing >= lastNumber) {
+      alert("No more people in queue!");
+      return;
+    }
+
+    await updateDoc(ref, {
+      currentServing: currentServing + 1
+    });
+
+    alert("Moved to next!");
+  } catch (error) {
+    console.error(error);
+    alert("Error occurred. Check console.");
   }
-
-  await updateDoc(ref, {
-    currentServing: increment(1)
-  });
-
-  alert("Moved to next!");
-};
-// 🔄 RESET QUEUE
+};// 🔄 RESET QUEUE
 window.resetQueue = async function () {
   const confirmReset = confirm("Reset entire queue?");
 
