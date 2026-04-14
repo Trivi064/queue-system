@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin - Queue System</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      margin-top: 80px;
+      background-color: #f5f7fa;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      margin: 10px;
+      border: none;
+      border-radius: 8px;
+      background-color: #333;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    input {
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🔒 Admin Panel</h1>
+
+<input type="password" id="pass" placeholder="Enter password">
+<br>
+<button onclick="checkAdmin()">Access</button>
+
+<div id="adminControls" style="display:none;">
+  <button onclick="nextPerson()">Next</button>
+  <br>
+  <button onclick="resetQueue()" style="background-color:red;">
+    Reset Queue
+  </button>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// 🔥 Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyBtIiNdx5cZwurBNZPrkaIe_pQaI92Qpzc",
+  authDomain: "queue-management-system-83a71.firebaseapp.com",
+  projectId: "queue-management-system-83a71",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 🔒 PASSWORD CHECK
+window.checkAdmin = function () {
+  const password = document.getElementById("pass").value;
+
+  if (password === "admin123") {
+    document.getElementById("adminControls").style.display = "block";
+  } else {
+    alert("Wrong password");
+  }
+};
+
+// ➡️ NEXT PERSON
+window.nextPerson = async function () {
+  const ref = doc(db, "queue", "main");
+
+  await updateDoc(ref, {
+    currentServing: increment(1)
+  });
+
+  alert("Moved to next!");
+};
+
+// 🔄 RESET QUEUE
+window.resetQueue = async function () {
+  const confirmReset = confirm("Reset entire queue?");
+
+  if (!confirmReset) return;
+
+  const ref = doc(db, "queue", "main");
+
+  await updateDoc(ref, {
+    currentServing: 0,
+    lastNumber: 0
+  });
+
+  alert("Queue reset!");
+};
+
+</script>
+
+</body>
+</html>
